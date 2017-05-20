@@ -1,0 +1,1 @@
+cmd_/root/Documents/Git/osHwAssignments/homework1/simple.ko := ld -m elf_x86_64 -r -o /root/Documents/Git/osHwAssignments/homework1/simple.ko /root/Documents/Git/osHwAssignments/homework1/simple.o /root/Documents/Git/osHwAssignments/homework1/simple.mod.o
