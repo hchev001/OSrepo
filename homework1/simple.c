@@ -10,8 +10,8 @@
  *
  *        Module Name: simple.c
  *
- *        I cerity that this program code has been written by me and no part of it has been taking from any sources.
  *
+ *        I certify that this program code has been written by me and no part of it has been taken from any sources.
  */
 #include <linux/module.h>
 #include <linux/kernel.h>
