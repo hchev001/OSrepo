@@ -1,0 +1,1 @@
+cmd_/usr/src/linux/pinfoCall/dynMod/testModule.ko := ld -m elf_x86_64 -r -o /usr/src/linux/pinfoCall/dynMod/testModule.ko /usr/src/linux/pinfoCall/dynMod/testModule.o /usr/src/linux/pinfoCall/dynMod/testModule.mod.o

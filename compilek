@@ -1,0 +1,6 @@
+#!/bin/bash
+make -j bzImage
+make -j modules
+make -j
+make -j modules_install
+make -j install

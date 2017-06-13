@@ -1,0 +1,69 @@
+==========================================
+Parent ID: 3188
+Child1 ID: 0
+Child2 ID: 0
+==========================================
+Syscall return value: 0 (success if 0)
+This process PID:  3189
+Current State of Process:  0
+Process NICE value:  0
+Parent PID:  3188
+Number of Children:  0
+Number of Light Chidlren (threads): 1
+Youngest Child PID: -1
+Younger Sibling PID: -1
+Older Sibling  PID: -1
+Process start time (in ms): 302
+CPU time spent in user mode (in ns): 0
+CPU time spent in system mode (in ns): 1
+Total user time of chidlren (in ns): 0
+Total system time of children (in ns): 0
+User Id of process owner: 0
+Name of Program being executed:  test
+
+==========================================
+Parent ID: 3188
+Child1 ID: 3189
+Child2 ID: 3189
+==========================================
+Syscall return value: 0 (success if 0)
+This process PID:  3190
+Current State of Process:  0
+Process NICE value:  0
+Parent PID:  3188
+Number of Children:  0
+Number of Light Chidlren (threads): 1
+Youngest Child PID: -1
+Younger Sibling PID: -1
+Older Sibling  PID: -1
+Process start time (in ms): 302
+CPU time spent in user mode (in ns): 0
+CPU time spent in system mode (in ns): 0
+Total user time of chidlren (in ns): 0
+Total system time of children (in ns): 0
+User Id of process owner: 0
+Name of Program being executed:  test
+
+==========================================
+Parent ID: 3188
+Child1 ID: 3189
+Child2 ID: 3189
+==========================================
+Syscall return value: 0 (success if 0)
+This process PID:  3188
+Current State of Process:  0
+Process NICE value:  0
+Parent PID:  3153
+Number of Children:  2
+Number of Light Chidlren (threads): 1
+Youngest Child PID: -1
+Younger Sibling PID: 3190
+Older Sibling  PID: -1
+Process start time (in ms): 301
+CPU time spent in user mode (in ns): 0
+CPU time spent in system mode (in ns): 1
+Total user time of chidlren (in ns): 2
+Total system time of children (in ns): 0
+User Id of process owner: 0
+Name of Program being executed:  test
+

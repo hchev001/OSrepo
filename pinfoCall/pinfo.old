@@ -1,0 +1,314 @@
+#include <linux/init.h>
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/list.h>
+#include <linux/types.h>
+#include <asm/uaccess.h>
+#include <linux/sched.h>
+#include "/usr/src/linux/include/linux/pinfo.h"
+
+
+//function prototypes
+pid_t get_current_pid(struct task_struct *current_task);
+long get_state(struct task_struct *current_task);
+long get_nice(struct task_struct *current_task);
+pid_t get_parent_pid(struct task_struct *current_task);
+int get_num_children(struct task_struct *current_task);
+pid_t get_youngest_child_pid(struct task_struct *current_task, int num_children);
+pid_t get_younger_sibling_pid(struct task_struct *current_task);
+pid_t get_older_sibling_pid(struct task_struct *current_task);
+unsigned long get_start_time(struct task_struct *current_task);
+long get_user_time(struct task_struct *current_task);
+long get_sys_time(struct task_struct *current_task);
+long get_cutime(struct task_struct *current_task, int num_children);
+long get_cstime(struct task_struct *current_task, int num_children);
+long get_current_uid(struct task_struct *current_task);
+int get_nr_threads(struct task_struct *current_task);
+
+
+/* asmlinkage function */
+asmlinkage long sys_pinfo(struct pinfo *info)
+{
+        //declarations
+        struct pinfo temp_info;
+
+        //initializations
+        struct task_struct *current_task = get_current();
+
+        //if info is null, then return -22
+        if (&info == NULL)
+        {
+                return -22;
+        }
+
+        //get current's pid - pid_t
+        temp_info.pid = get_current_pid(current_task);
+
+        //get process state - long
+        temp_info.state = get_state(current_task);
+
+        //get nice value - long
+        temp_info.nice = get_nice(current_task);
+
+        //get parent id - pid_t
+        temp_info.parent_pid = get_parent_pid(current_task);
+
+        //get number of children - pid_t
+        temp_info.nr_children = get_num_children(current_task);
+
+        //get youngest sibling pid
+        temp_info.youngest_child_pid = get_youngest_child_pid(current_task, temp_info.nr_children);
+
+        //get younger sibling pid - pid_t
+        temp_info.younger_sibling_pid = get_younger_sibling_pid(current_task);
+
+        //get older sibling pid - pid_t
+        temp_info.older_sibling_pid = get_older_sibling_pid(current_task);
+
+        //get process start time
+        temp_info.start_time = get_start_time(current_task);
+
+        //get cpu time spent in user mode - long user_time
+        temp_info.user_time = get_user_time(current_task);
+
+        //get cpu time spent in system mode - long sys_time
+        temp_info.sys_time = get_sys_time(current_task);
+
+        //get total user/sys time of children - long cutime/long cstime
+        temp_info.cutime = get_cutime(current_task, temp_info.nr_children);
+        temp_info.cstime = get_cstime(current_task, temp_info.nr_children);
+
+        //get user id of process owner - long uid
+        temp_info.uid = get_current_uid(current_task);
+
+	temp_info.nr_threads = -1;
+
+        //get name of program executed - char comm[16]
+        strncpy(temp_info.comm, current_task->comm, 16);
+
+        //copy to user space - if error, return -22
+        if (copy_to_user(info, &temp_info, sizeof(struct pinfo)))
+        {
+                return -22;
+        }
+
+        return 0;
+}
+
+/* Returns the current process's id */
+pid_t get_current_pid(struct task_struct *current_task)
+{
+      return current_task->pid;
+}
+
+/* Returns the current process's state */
+long get_state(struct task_struct *current_task)
+{
+      return current_task->state;
+}
+
+/* Returns the current process's nice value */
+long get_nice(struct task_struct *current_task)
+{
+      return task_nice(current_task);
+}
+
+/* Returns the current process's parent's id */
+pid_t get_parent_pid(struct task_struct *current_task)
+{
+      return current_task->parent->pid;
+}
+
+/* Returns the number of children of the current process */
+int get_num_children(struct task_struct *current_task)
+{
+/*
+    struct list_head *p;
+        int num_children = 0;
+
+        //iterate through all children and count
+        list_for_each(p, &current_task->children)
+        {
+              num_children++;
+        }
+
+        return num_children;
+*/
+
+/*  struct task_struct *temp;
+    int num = 0;
+
+    for_each_process(temp)
+    {
+        if(temp->parent->pid == current_task->pid)
+        {
+            num++;
+        }
+    }
+
+    return num;
+*/
+
+    int num = 0;
+    struct task_struct *temp;
+
+    list_for_each_entry(temp, &current_task->children, children)
+    {
+        num++;
+    }
+
+    return num;
+}
+
+/* Returns the current process's youngest child's pid */
+pid_t get_youngest_child_pid(struct task_struct *current_task, int num_children)
+{
+      struct task_struct *child;
+
+      //get last (youngest) child's pid
+      child = list_entry(current_task->children.prev, struct task_struct, children);
+
+
+      if(child->pid <= 0)
+      {
+              return -1;
+      }
+      else if(child->pid == current_task->pid)
+      {
+          return -1;
+      }
+      else
+      {
+              return child->pid;
+      }
+}
+
+/* Returns the current process's younger sibling's pid */
+pid_t get_younger_sibling_pid(struct task_struct *current_task)
+{
+      struct task_struct *younger_sibling;
+
+      //get last (younger) sibling's pid
+      younger_sibling = list_entry(current_task->sibling.prev, struct task_struct, sibling);
+
+
+      if (younger_sibling->pid <= 0)
+      {
+            return -1;
+      }
+      else if(younger_sibling->pid == current_task->pid)
+      {
+            return -1;
+      }
+      else
+      {
+            return younger_sibling->pid;
+      }
+}
+
+/* Returns the current process's older sibling's pid */
+pid_t get_older_sibling_pid(struct task_struct *current_task)
+{
+      struct task_struct *older_sibling;
+
+      //get first (older) sibling's pid
+      older_sibling = list_entry(current_task->sibling.next, struct task_struct, sibling);
+
+
+      if (older_sibling->pid <= 0)
+      {
+            return -1;
+      }
+      else if(older_sibling->pid == current_task->pid)
+      {
+        return -1;
+      }
+      else
+      {
+            return older_sibling->pid;
+      }
+}
+
+/* Returns the current process's start time */
+unsigned long get_start_time(struct task_struct *current_task)
+{
+      struct timespec start_time;
+      start_time = current_task->start_time;
+
+      return start_time.tv_nsec;
+}
+
+/* Returns the current process's user time */
+long get_user_time(struct task_struct *current_task)
+{
+      return current_task->utime;
+}
+
+/* Returns the current process's system time */
+long get_sys_time(struct task_struct *current_task)
+{
+      return current_task->stime;
+}
+
+
+/* Returns the current process's children's user time */
+long get_cutime(struct task_struct *current_task, int num_children)
+{
+      long total_children_user_time = 0;
+
+      //If no children, then no time (zero)
+      if (num_children == 0)
+      {
+              return 0;
+      }
+      else    //else, iterate and sum every child's user time
+      {
+              struct task_struct *child;
+              struct list_head *p;
+
+              list_for_each(p, &current_task->children)
+              {
+                      child = list_entry(p, struct task_struct, children);
+                      total_children_user_time += child->utime;
+              }
+
+              return total_children_user_time;
+      }
+}
+
+/* Returns the current process's children's system time */
+long get_cstime(struct task_struct *current_task, int num_children)
+{
+      long total_children_sys_time = 0;
+
+      //If no children, then no time (zero)
+      if (num_children == 0)
+      {
+              return 0;
+      }
+      else    //else, iterate and sum every child's system time
+      {
+              struct task_struct *child;
+              struct list_head *p;
+
+              list_for_each(p, &current_task->children)
+              {
+                      child = list_entry(p, struct task_struct, children);
+                      total_children_sys_time += child->stime;
+              }
+
+              return total_children_sys_time;
+      }
+}
+
+/* Returns current process's user id */
+long get_current_uid(struct task_struct *current_task)
+{
+      return current_task->user->uid;
+}
+
+
+int get_nr_threads(struct task_struct *current_task)
+{
+	return 0;
+}
